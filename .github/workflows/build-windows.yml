@@ -1,1 +1,52 @@
+name: Build Spek Windows Executable
 
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch: # Allows manual trigger
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout the repository
+      uses: actions/checkout@v3
+
+    - name: Set up MSYS2 for MinGW
+      uses: msys2/setup-msys2@v2
+      with:
+        update: true
+        install: >-
+          mingw-w64-x86_64-toolchain
+          mingw-w64-x86_64-make
+          mingw-w64-x86_64-pkgconf
+          base-devel
+
+        msystem: MINGW64
+
+    - name: Add MSYS2 to PATH
+      run: echo "C:/msys64/mingw64/bin" >> $GITHUB_PATH
+
+    - name: Install additional dependencies (base-devel)
+      run: |
+        C:/msys64/usr/bin/bash -lc "pacman -S --noconfirm base-devel"
+
+    - name: Prepare the build
+      run: |
+        C:/msys64/usr/bin/bash -lc "./autogen.sh"
+        C:/msys64/usr/bin/bash -lc "./configure"
+
+    - name: Build the project using make
+      run: |
+        C:/msys64/usr/bin/bash -lc "make"
+
+    - name: Upload the Windows executable
+      uses: actions/upload-artifact@v3
+      with:
+        name: spek.exe
+        path: src/spek.exe
