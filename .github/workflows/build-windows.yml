@@ -23,21 +23,27 @@ jobs:
         update: true
         install: >-
           mingw-w64-x86_64-toolchain
-          mingw-w64-x86_64-cmake
+          mingw-w64-x86_64-autotools
         msystem: MINGW64
 
     - name: Add MSYS2 to PATH
       run: echo "C:/msys64/mingw64/bin" >> $GITHUB_PATH
 
+    - name: Install build dependencies
+      run: |
+        pacman -S --noconfirm autoconf automake libtool pkg-config
+
+    - name: Prepare the build
+      run: |
+        ./autogen.sh
+        ./configure --host=x86_64-w64-mingw32
+
     - name: Build the project
       run: |
-        mkdir build
-        cd build
-        cmake -G "MinGW Makefiles" ..
-        cmake --build .
+        make
 
     - name: Upload the Windows executable
       uses: actions/upload-artifact@v3
       with:
         name: spek.exe
-        path: build/spek.exe
+        path: src/spek.exe
