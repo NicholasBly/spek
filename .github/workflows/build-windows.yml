@@ -15,18 +15,24 @@ jobs:
     - name: Checkout the repository
       uses: actions/checkout@v3
 
+    - name: Set up CMake
+      uses: jwlawson/actions-setup-cmake@v1.13
+      with:
+        cmake-version: '3.26.x'
+
     - name: Set up MSYS2 for MinGW
       uses: msys2/setup-msys2@v2
       with:
         update: true
         install: >-
           mingw-w64-x86_64-toolchain
-          mingw-w64-x86_64-cmake
           base-devel
         msystem: MINGW64
 
-    - name: Add MSYS2 to PATH
-      run: echo "C:/msys64/mingw64/bin" >> $GITHUB_PATH
+    - name: Add MSYS2 and CMake to PATH
+      run: |
+        echo "C:/msys64/mingw64/bin" >> $GITHUB_PATH
+        echo "C:/Program Files/CMake/bin" >> $GITHUB_PATH
 
     - name: Wait for MSYS2 to initialize
       run: |
@@ -37,13 +43,15 @@ jobs:
 
     - name: Configure CMake
       working-directory: build
+      shell: cmd
       run: |
-        C:/msys64/usr/bin/bash -lc "cmake -G 'MSYS Makefiles' .."
+        cmake -G "MinGW Makefiles" ..
 
     - name: Build the project
       working-directory: build
+      shell: cmd
       run: |
-        C:/msys64/usr/bin/bash -lc "make"
+        mingw32-make
 
     - name: Upload the Windows executable
       uses: actions/upload-artifact@v3
