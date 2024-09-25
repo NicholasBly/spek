@@ -1,5 +1,4 @@
 name: Build Spek Windows Executable
-
 on:
   push:
     branches:
@@ -7,12 +6,11 @@ on:
   pull_request:
     branches:
       - main
-  workflow_dispatch: # Allows manual trigger
+  workflow_dispatch: # Allows manual trigger of the workflow
 
 jobs:
   build:
     runs-on: windows-latest
-
     steps:
     - name: Checkout the repository
       uses: actions/checkout@v3
@@ -23,24 +21,27 @@ jobs:
         update: true
         install: >-
           mingw-w64-x86_64-toolchain
-          mingw-w64-x86_64-make
-          mingw-w64-x86_64-pkgconf
+          mingw-w64-x86_64-cmake
           base-devel
         msystem: MINGW64
 
     - name: Add MSYS2 to PATH
       run: echo "C:/msys64/mingw64/bin" >> $GITHUB_PATH
 
-    - name: Install additional dependencies (base-devel)
+    - name: Wait for MSYS2 to initialize
       run: |
-        C:/msys64/usr/bin/bash -lc "pacman -S --noconfirm base-devel"
+        C:/msys64/usr/bin/bash -lc "echo MSYS2 initialized"
 
-    - name: Prepare the build
+    - name: Create build directory
+      run: mkdir build
+
+    - name: Configure CMake
+      working-directory: build
       run: |
-        C:/msys64/usr/bin/bash -lc "./autogen.sh"
-        C:/msys64/usr/bin/bash -lc "./configure"
+        C:/msys64/usr/bin/bash -lc "cmake -G 'MSYS Makefiles' .."
 
-    - name: Build the project using make
+    - name: Build the project
+      working-directory: build
       run: |
         C:/msys64/usr/bin/bash -lc "make"
 
@@ -48,4 +49,4 @@ jobs:
       uses: actions/upload-artifact@v3
       with:
         name: spek.exe
-        path: src/spek.exe
+        path: build/src/spek.exe
