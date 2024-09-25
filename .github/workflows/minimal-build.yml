@@ -62,4 +62,4 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: spek
-          path: ${{ runner.workspace }}/spek.exe
+          path: build/app/outputs/spek.exe
