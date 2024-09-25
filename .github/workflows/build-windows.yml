@@ -34,9 +34,9 @@ jobs:
       run: |
         C:/msys64/usr/bin/bash -lc "pacman -S --noconfirm base-devel"
 
-    - name: Build the project using MinGW make
+    - name: Build the project using make
       run: |
-        C:/msys64/usr/bin/bash -lc "mingw32-make"
+        C:/msys64/usr/bin/bash -lc "make"
 
     - name: Upload the Windows executable
       uses: actions/upload-artifact@v3
