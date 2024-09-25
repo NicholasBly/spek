@@ -22,6 +22,7 @@ jobs:
           Get-Content CMakeLists.txt
         } else {
           Write-Output "CMakeLists.txt not found in root"
+        }
 
     - name: Setup MinGW
       shell: pwsh
@@ -43,31 +44,18 @@ jobs:
             Write-Output "Found the following .cpp files:"
             $cppFiles | ForEach-Object { Write-Output $_.FullName }
             $cppFilesList = $cppFiles.FullName -join ' '
-            $outputExe = "spek.exe"
-            $command = "g++ -o $outputExe $cppFilesList"
+            $command = "g++ -o spek.exe $cppFilesList"
             Write-Output "Executing command: $command"
             Invoke-Expression $command
             if ($LASTEXITCODE -ne 0) {
               Write-Error "Compilation failed"
               exit 1
-            } else {
-              Write-Output "Compilation successful. Executable created: $outputExe"
             }
           } else {
             Write-Output "No .cpp files found. Please provide more information about your project structure."
           }
         } else {
           Write-Output "CMakeLists.txt found, skipping direct compilation"
-        }
-
-    - name: Check for spek.exe
-      shell: pwsh
-      run: |
-        if (Test-Path "spek.exe") {
-          Write-Output "Executable spek.exe found!"
-        } else {
-          Write-Error "Executable spek.exe not found!"
-          exit 1
         }
 
     - name: Upload artifact
