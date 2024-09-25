@@ -1,0 +1,41 @@
+name: Minimal Windows Build
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: List directory contents
+      run: |
+        dir
+        if exist CMakeLists.txt (echo CMakeLists.txt found in root) else (echo CMakeLists.txt not found in root)
+
+    - name: Setup MinGW
+      run: |
+        choco install mingw
+        refreshenv
+    
+    - name: Verify GCC installation
+      run: gcc --version
+
+    - name: Compile (if no CMake)
+      run: |
+        if not exist CMakeLists.txt (
+          g++ -o spek.exe src/*.cpp
+        ) else (
+          echo "CMakeLists.txt found, skipping direct compilation"
+        )
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: spek
+        path: spek.exe
