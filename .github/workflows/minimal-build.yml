@@ -2,64 +2,64 @@ name: Minimal Windows Build
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
-    branches: [ main ]
+    branches: [main]
   workflow_dispatch:
 
 jobs:
   build:
     runs-on: windows-latest
     steps:
-    - uses: actions/checkout@v3
-    
-    - name: List directory contents
-      shell: pwsh
-      run: |
-        Get-ChildItem -Force -Recurse
-        if (Test-Path CMakeLists.txt) {
-          Write-Output "CMakeLists.txt found in root"
-          Get-Content CMakeLists.txt
-        } else {
-          Write-Output "CMakeLists.txt not found in root"
-        }
+      - uses: actions/checkout@v3
 
-    - name: Setup MinGW
-      shell: pwsh
-      run: |
-        choco install mingw
-        $env:PATH += ";C:\ProgramData\chocolatey\lib\mingw\tools\install\mingw64\bin"
-        [Environment]::SetEnvironmentVariable("PATH", $env:PATH, "Machine")
-        Write-Output "Updated PATH: $env:PATH"
+      - name: List directory contents
+        shell: pwsh
+        run: |
+          Get-ChildItem -Force -Recurse
+          if (Test-Path CMakeLists.txt) {
+            Write-Output "CMakeLists.txt found in root"
+            Get-Content CMakeLists.txt
+          } else {
+            Write-Output "CMakeLists.txt not found in root"
+          }
 
-    - name: Verify GCC installation
-      run: gcc --version
+      - name: Setup MinGW
+        shell: pwsh
+        run: |
+          choco install mingw
+          $env:PATH += ";C:\ProgramData\chocolatey\lib\mingw\tools\install\mingw64\bin"
+          [Environment]::SetEnvironmentVariable("PATH", $env:PATH, "Machine")
+          Write-Output "Updated PATH: $env:PATH"
 
-    - name: Compile (if no CMake)
-      shell: pwsh
-      run: |
-        if (-not (Test-Path CMakeLists.txt)) {
-          $cppFiles = Get-ChildItem -Recurse -Filter *.cpp
-          if ($cppFiles.Count -gt 0) {
-            Write-Output "Found the following .cpp files:"
-            $cppFiles | ForEach-Object { Write-Output $_.FullName }
-            $cppFilesList = $cppFiles.FullName -join ' '
-            $command = "g++ -o spek.exe $cppFilesList"
-            Write-Output "Executing command: $command"
-            Invoke-Expression $command
-            if ($LASTEXITCODE -ne 0) {
-              Write-Error "Compilation failed"
-              exit 1
+      - name: Verify GCC installation
+        run: gcc --version
+
+      - name: Compile (if no CMake)
+        shell: pwsh
+        run: |
+          if (-not (Test-Path CMakeLists.txt)) {
+            $cppFiles = Get-ChildItem -Recurse -Filter *.cpp
+            if ($cppFiles.Count -gt 0) {
+              Write-Output "Found the following .cpp files:"
+              $cppFiles | ForEach-Object { Write-Output $_.FullName }
+              $cppFilesList = $cppFiles.FullName -join ' '
+              $command = "g++ -o spek.exe $cppFilesList"
+              Write-Output "Executing command: $command"
+              Invoke-Expression $command
+              if ($LASTEXITCODE -ne 0) {
+                Write-Error "Compilation failed"
+                exit 1
+              }
+            } else {
+              Write-Output "No .cpp files found. Please provide more information about your project structure."
             }
           } else {
-            Write-Output "No .cpp files found. Please provide more information about your project structure."
+            Write-Output "CMakeLists.txt found, skipping direct compilation"
           }
-        } else {
-          Write-Output "CMakeLists.txt found, skipping direct compilation"
-        }
 
-    - name: Upload artifact
-      uses: actions/upload-artifact@v3
-      with:
-        name: spek
-        path: spek.exe
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: spek
+          path: ${{ runner.workspace }}\spek.exe  # Use relative path for artifact
