@@ -58,8 +58,11 @@ jobs:
             Write-Output "CMakeLists.txt found, skipping direct compilation"
           }
 
+      - name: List output directory
+        run: ls -la .output
+
       - name: Upload artifact
         uses: actions/upload-artifact@v3
         with:
           name: spek
-          path: ${{ runner.workspace }}\spek.exe
+          path: .output/spek.exe
