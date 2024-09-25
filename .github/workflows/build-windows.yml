@@ -29,18 +29,22 @@ jobs:
     - name: Add MSYS2 to PATH
       run: echo "C:/msys64/mingw64/bin" >> $GITHUB_PATH
 
+    - name: Wait for MSYS2 to initialize
+      run: |
+        C:/msys64/usr/bin/bash -lc "echo MSYS2 initialized"
+
     - name: Install build dependencies
       run: |
-        pacman -S --noconfirm autoconf automake libtool pkg-config
+        C:/msys64/usr/bin/bash -lc "pacman -S --noconfirm autoconf automake libtool pkg-config"
 
     - name: Prepare the build
       run: |
-        ./autogen.sh
-        ./configure --host=x86_64-w64-mingw32
+        C:/msys64/usr/bin/bash -lc "./autogen.sh"
+        C:/msys64/usr/bin/bash -lc "./configure --host=x86_64-w64-mingw32"
 
     - name: Build the project
       run: |
-        make
+        C:/msys64/usr/bin/bash -lc "make"
 
     - name: Upload the Windows executable
       uses: actions/upload-artifact@v3
