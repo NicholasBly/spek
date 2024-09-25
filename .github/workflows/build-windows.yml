@@ -23,6 +23,7 @@ jobs:
         update: true
         install: >-
           mingw-w64-x86_64-toolchain
+          base-devel  # This installs make and other necessary tools
         msystem: MINGW64
 
     - name: Add MSYS2 to PATH
