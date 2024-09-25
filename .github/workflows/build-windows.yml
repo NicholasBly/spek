@@ -23,7 +23,8 @@ jobs:
         update: true
         install: >-
           mingw-w64-x86_64-toolchain
-          mingw-w64-x86_64-make  # Explicitly install make for MinGW
+          mingw-w64-x86_64-make  # Corrected installation
+
         msystem: MINGW64
 
     - name: Add MSYS2 to PATH
