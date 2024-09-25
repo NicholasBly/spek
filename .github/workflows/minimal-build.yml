@@ -24,9 +24,12 @@ jobs:
         }
 
     - name: Setup MinGW
+      shell: pwsh
       run: |
         choco install mingw
-        refreshenv
+        $env:PATH += ";C:\ProgramData\chocolatey\lib\mingw\tools\install\mingw64\bin"
+        [Environment]::SetEnvironmentVariable("PATH", $env:PATH, "Machine")
+        Write-Output "Updated PATH: $env:PATH"
 
     - name: Verify GCC installation
       run: gcc --version
@@ -37,11 +40,17 @@ jobs:
         if (-not (Test-Path CMakeLists.txt)) {
           if (Test-Path src) {
             g++ -o spek.exe src/*.cpp
+            if ($LASTEXITCODE -ne 0) {
+              Write-Error "Compilation failed"
+              exit 1
+            }
           } else {
             Write-Output "No src directory found. Please provide more information about your project structure."
+            Get-ChildItem -Recurse
           }
         } else {
           Write-Output "CMakeLists.txt found, skipping direct compilation"
+          Get-Content CMakeLists.txt
         }
 
     - name: Upload artifact
