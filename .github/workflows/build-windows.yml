@@ -34,9 +34,10 @@ jobs:
         echo "C:/msys64/mingw64/bin" >> $GITHUB_PATH
         echo "C:/Program Files/CMake/bin" >> $GITHUB_PATH
 
-    - name: Wait for MSYS2 to initialize
+    - name: List directory contents
       run: |
-        C:/msys64/usr/bin/bash -lc "echo MSYS2 initialized"
+        dir
+        if exist CMakeLists.txt (echo CMakeLists.txt found in root) else (echo CMakeLists.txt not found in root)
 
     - name: Create build directory
       run: mkdir build
@@ -45,16 +46,33 @@ jobs:
       working-directory: build
       shell: cmd
       run: |
-        cmake -G "MinGW Makefiles" ..
+        if exist ..\CMakeLists.txt (
+          cmake -G "MinGW Makefiles" ..
+        ) else if exist ..\src\CMakeLists.txt (
+          cmake -G "MinGW Makefiles" ..\src
+        ) else (
+          echo "CMakeLists.txt not found in expected locations"
+          exit 1
+        )
 
     - name: Build the project
       working-directory: build
       shell: cmd
       run: |
-        mingw32-make
+        if exist Makefile (
+          mingw32-make
+        ) else if exist ..\Makefile (
+          mingw32-make -C ..
+        ) else (
+          echo "Makefile not found. Attempting direct compilation."
+          g++ -o spek.exe ..\src\*.cpp
+        )
 
     - name: Upload the Windows executable
       uses: actions/upload-artifact@v3
       with:
         name: spek.exe
-        path: build/src/spek.exe
+        path: |
+          build/spek.exe
+          build/src/spek.exe
+          spek.exe
