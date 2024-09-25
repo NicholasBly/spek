@@ -26,7 +26,6 @@ jobs:
           mingw-w64-x86_64-make
           mingw-w64-x86_64-pkgconf
           base-devel
-
         msystem: MINGW64
 
     - name: Add MSYS2 to PATH
