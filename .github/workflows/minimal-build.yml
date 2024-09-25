@@ -16,9 +16,10 @@ jobs:
     - name: List directory contents
       shell: pwsh
       run: |
-        Get-ChildItem -Force
+        Get-ChildItem -Force -Recurse
         if (Test-Path CMakeLists.txt) {
           Write-Output "CMakeLists.txt found in root"
+          Get-Content CMakeLists.txt
         } else {
           Write-Output "CMakeLists.txt not found in root"
         }
@@ -38,19 +39,23 @@ jobs:
       shell: pwsh
       run: |
         if (-not (Test-Path CMakeLists.txt)) {
-          if (Test-Path src) {
-            g++ -o spek.exe src/*.cpp
+          $cppFiles = Get-ChildItem -Recurse -Filter *.cpp
+          if ($cppFiles.Count -gt 0) {
+            Write-Output "Found the following .cpp files:"
+            $cppFiles | ForEach-Object { Write-Output $_.FullName }
+            $cppFilesList = $cppFiles.FullName -join ' '
+            $command = "g++ -o spek.exe $cppFilesList"
+            Write-Output "Executing command: $command"
+            Invoke-Expression $command
             if ($LASTEXITCODE -ne 0) {
               Write-Error "Compilation failed"
               exit 1
             }
           } else {
-            Write-Output "No src directory found. Please provide more information about your project structure."
-            Get-ChildItem -Recurse
+            Write-Output "No .cpp files found. Please provide more information about your project structure."
           }
         } else {
           Write-Output "CMakeLists.txt found, skipping direct compilation"
-          Get-Content CMakeLists.txt
         }
 
     - name: Upload artifact
