@@ -1,47 +1,42 @@
-name: Build Spek on Windows
+name: Build Spek Windows Executable
 
 on:
   push:
     branches:
-      - main  # Run the action on any push to the main branch
+      - main
   pull_request:
     branches:
-      - main  # Run the action on pull requests targeting main
+      - main
 
 jobs:
   build:
     runs-on: windows-latest
 
     steps:
-    - name: Checkout source code
+    - name: Checkout the repository
       uses: actions/checkout@v3
 
-    - name: Set up MSYS2
+    - name: Set up MSYS2 for MinGW
       uses: msys2/setup-msys2@v2
       with:
-        msystem: MINGW64
-        install: >-
-          base-devel
-          mingw-w64-x86_64-toolchain
-          mingw-w64-x86_64-ffmpeg
-          mingw-w64-x86_64-sdl2
         update: true
+        install: >-
+          mingw-w64-x86_64-toolchain
+          mingw-w64-x86_64-cmake
+        msystem: MINGW64
 
     - name: Add MSYS2 to PATH
-      run: |
-        echo "$GITHUB_WORKSPACE"
-        echo "::add-path::C:\\msys64\\mingw64\\bin"
-        echo "::add-path::C:\\msys64\\usr\\bin"
+      run: echo "::add-path::C:/msys64/mingw64/bin"
 
-    - name: Compile Spek
+    - name: Build the project
       run: |
-        cd $GITHUB_WORKSPACE
-        ./autogen.sh
-        ./configure --host=x86_64-w64-mingw32
-        make
+        mkdir build
+        cd build
+        cmake -G "MinGW Makefiles" ..
+        cmake --build .
 
-    - name: Upload Build Artifact (EXE)
+    - name: Upload the Windows executable
       uses: actions/upload-artifact@v3
       with:
-        name: spek-windows-build
-        path: $GITHUB_WORKSPACE/spek.exe
+        name: spek.exe
+        path: build/spek.exe
