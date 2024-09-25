@@ -44,7 +44,7 @@ jobs:
               Write-Output "Found the following .cpp files:"
               $cppFiles | ForEach-Object { Write-Output $_.FullName }
               $cppFilesList = $cppFiles.FullName -join ' '
-              $command = "g++ -o spek.exe $cppFilesList"
+              $command = "g++ -o ${{ runner.workspace }}\spek.exe $cppFilesList"
               Write-Output "Executing command: $command"
               Invoke-Expression $command
               if ($LASTEXITCODE -ne 0) {
@@ -62,4 +62,4 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: spek
-          path: ${{ runner.workspace }}\spek.exe  # Use relative path for artifact
+          path: ${{ runner.workspace }}\spek.exe
