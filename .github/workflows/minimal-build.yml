@@ -14,25 +14,35 @@ jobs:
     - uses: actions/checkout@v3
     
     - name: List directory contents
+      shell: pwsh
       run: |
-        dir
-        if exist CMakeLists.txt (echo CMakeLists.txt found in root) else (echo CMakeLists.txt not found in root)
+        Get-ChildItem -Force
+        if (Test-Path CMakeLists.txt) {
+          Write-Output "CMakeLists.txt found in root"
+        } else {
+          Write-Output "CMakeLists.txt not found in root"
+        }
 
     - name: Setup MinGW
       run: |
         choco install mingw
         refreshenv
-    
+
     - name: Verify GCC installation
       run: gcc --version
 
     - name: Compile (if no CMake)
+      shell: pwsh
       run: |
-        if not exist CMakeLists.txt (
-          g++ -o spek.exe src/*.cpp
-        ) else (
-          echo "CMakeLists.txt found, skipping direct compilation"
-        )
+        if (-not (Test-Path CMakeLists.txt)) {
+          if (Test-Path src) {
+            g++ -o spek.exe src/*.cpp
+          } else {
+            Write-Output "No src directory found. Please provide more information about your project structure."
+          }
+        } else {
+          Write-Output "CMakeLists.txt found, skipping direct compilation"
+        }
 
     - name: Upload artifact
       uses: actions/upload-artifact@v3
