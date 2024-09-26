@@ -20,6 +20,8 @@ jobs:
         Get-ChildItem -Force
         Write-Output "Full directory structure:"
         Get-ChildItem -Force -Recurse | Select-Object FullName
+        Write-Output "All .cc and .h files:"
+        Get-ChildItem -Recurse -Include *.cc, *.h | Select-Object FullName
 
     - name: Setup MinGW
       shell: pwsh
@@ -30,17 +32,17 @@ jobs:
         Write-Output "Updated PATH: $env:PATH"
 
     - name: Verify GCC installation
-      run: gcc --version
+      run: g++ --version
 
     - name: Compile project
       shell: pwsh
       run: |
-        $cppFiles = Get-ChildItem -Recurse -Filter *.cpp
-        if ($cppFiles.Count -gt 0) {
-          Write-Output "Found the following .cpp files:"
-          $cppFiles | ForEach-Object { Write-Output $_.FullName }
-          $cppFilesList = $cppFiles.FullName -join ' '
-          $command = "g++ -o spek.exe $cppFilesList"
+        $ccFiles = Get-ChildItem -Recurse -Filter *.cc
+        if ($ccFiles.Count -gt 0) {
+          Write-Output "Found the following .cc files:"
+          $ccFiles | ForEach-Object { Write-Output $_.FullName }
+          $ccFilesList = $ccFiles.FullName -join ' '
+          $command = "g++ -o spek.exe $ccFilesList"
           Write-Output "Executing command: $command"
           Invoke-Expression $command
           if ($LASTEXITCODE -ne 0) {
@@ -48,7 +50,7 @@ jobs:
             exit 1
           }
         } else {
-          Write-Output "No .cpp files found. Please check your project structure."
+          Write-Output "No .cc files found. Please check your project structure."
           exit 1
         }
 
